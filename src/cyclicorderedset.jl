@@ -1,4 +1,4 @@
-using Base: IteratorEltype, HasEltype, HasLength, EltypeUnknown
+using Base: IteratorEltype, HasEltype, EltypeUnknown
 
 mutable struct LinkedNode{T}
     val::T
@@ -31,8 +31,6 @@ function _CyclicOrderedSet(itr, ::EltypeUnknown)
 end
 CyclicOrderedSet{T}(itr) where {T} = union!(CyclicOrderedSet{T}(), itr)
 
-Base.IteratorSize(::Type{<:CyclicOrderedSet}) = HasLength()
-Base.IteratorEltype(::Type{<:CyclicOrderedSet}) = HasEltype()
 Base.length(s::CyclicOrderedSet) = s.length
 Base.isempty(s::CyclicOrderedSet) = length(s) == 0
 
