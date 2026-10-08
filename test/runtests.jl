@@ -296,5 +296,31 @@ end
     @test cache_info(lru) == CacheInfo(; hits=0, misses=0, currentsize=0, maxsize=10)
 end
 
+# The iterator traits come from Base's defaults; LRUCache must not override them
+# (overriding invalidates compiled `IteratorSize(::Type{<:AbstractSet})`).
+@testset "CyclicOrderedSet iterator traits" begin
+    C = LRUCache.CyclicOrderedSet
+    for T in (C{Int}, C)
+        @test Base.IteratorSize(T) == Base.HasLength()
+        @test Base.IteratorEltype(T) == Base.HasEltype()
+        @test which(Base.IteratorSize, Tuple{Type{T}}).module === Base
+        @test which(Base.IteratorEltype, Tuple{Type{T}}).module === Base
+    end
+    s = C{Int}()
+    @test length(s) == 0
+    @test collect(s) == Int[]
+    for x in (3, 1, 2)
+        push!(s, x)
+    end
+    @test Base.IteratorSize(s) == Base.HasLength()
+    @test Base.IteratorEltype(s) == Base.HasEltype()
+    @test eltype(s) === Int
+    @test length(s) == 3
+    @test collect(s) == [3, 1, 2]
+    @test collect(s) isa Vector{Int}
+    @test collect(Iterators.reverse(s)) == [2, 1, 3]
+    @test union!(Set{Int}(), s) == Set([1, 2, 3])
+end
+
 include("originaltests.jl")
 include("serializationtests.jl")
